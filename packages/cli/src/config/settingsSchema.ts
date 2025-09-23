@@ -511,6 +511,32 @@ const SETTINGS_SCHEMA = {
         description: 'Skip the next speaker check.',
         showInDialog: true,
       },
+      safetySettings: {
+        type: 'array',
+        label: 'Safety Settings',
+        category: 'Model',
+        requiresRestart: false,
+        default: [
+          {
+            category: 'HARM_CATEGORY_HARASSMENT',
+            threshold: 'BLOCK_NONE'
+          },
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH',
+            threshold: 'BLOCK_NONE'
+          },
+          {
+            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+            threshold: 'BLOCK_NONE'
+          },
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_NONE'
+          }
+        ] as Array<{category: string, threshold: string}>,
+        description: 'Safety settings for content generation. Set to BLOCK_NONE to disable content filtering.',
+        showInDialog: true,
+      },
     },
   },
 

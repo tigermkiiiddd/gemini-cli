@@ -596,10 +596,14 @@ export class GeminiClient {
       const userMemory = this.config.getUserMemory();
       const systemInstruction = getCoreSystemPrompt(userMemory);
 
+      const contentGeneratorConfig = this.config.getContentGeneratorConfig();
       const requestConfig: GenerateContentConfig = {
         abortSignal,
         ...configToUse,
         systemInstruction,
+        ...(contentGeneratorConfig?.safetySettings && {
+          safetySettings: contentGeneratorConfig.safetySettings,
+        }),
       };
 
       const apiCall = () => {

@@ -11,6 +11,7 @@ import type {
   CountTokensParameters,
   EmbedContentResponse,
   EmbedContentParameters,
+  SafetySetting,
 } from '@google/genai';
 import { GoogleGenAI } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
@@ -53,6 +54,7 @@ export type ContentGeneratorConfig = {
   vertexai?: boolean;
   authType?: AuthType;
   proxy?: string;
+  safetySettings?: SafetySetting[];
 };
 
 export function createContentGeneratorConfig(
@@ -67,6 +69,7 @@ export function createContentGeneratorConfig(
   const contentGeneratorConfig: ContentGeneratorConfig = {
     authType,
     proxy: config?.getProxy(),
+    safetySettings: config?.getSafetySettings(),
   };
 
   // If we are using Google auth or we are in Cloud Shell, there is nothing else to validate for now

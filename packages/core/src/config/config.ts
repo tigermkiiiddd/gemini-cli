@@ -10,6 +10,8 @@ import type {
   ContentGenerator,
   ContentGeneratorConfig,
 } from '../core/contentGenerator.js';
+import type { SafetySetting } from '@google/genai';
+import { HarmCategory, HarmBlockThreshold } from '@google/genai';
 import {
   AuthType,
   createContentGenerator,
@@ -248,6 +250,7 @@ export interface ConfigParameters {
   policyEngineConfig?: PolicyEngineConfig;
   output?: OutputSettings;
   useModelRouter?: boolean;
+  safetySettings?: SafetySetting[];
 }
 
 export class Config {
@@ -336,6 +339,7 @@ export class Config {
   private readonly policyEngine: PolicyEngine;
   private readonly outputSettings: OutputSettings;
   private readonly useModelRouter: boolean;
+  private readonly safetySettings: SafetySetting[];
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -432,6 +436,12 @@ export class Config {
     this.outputSettings = {
       format: params.output?.format ?? OutputFormat.TEXT,
     };
+    this.safetySettings = params.safetySettings ?? [
+      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+    ];
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -543,6 +553,10 @@ export class Config {
 
   getModel(): string {
     return this.model;
+  }
+
+  getSafetySettings(): SafetySetting[] {
+    return this.safetySettings;
   }
 
   setModel(newModel: string): void {
