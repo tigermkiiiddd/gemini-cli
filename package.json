@@ -95,6 +95,8 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
+    "gray-matter": "^4.0.3",
+    "marked": "^16.3.0",
     "simple-git": "^3.28.0"
   },
   "optionalDependencies": {
