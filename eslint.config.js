@@ -36,6 +36,7 @@ export default tseslint.config(
       'package/bundle/**',
       '.integration-tests/**',
       'dist/**',
+      'third_party/get-ripgrep/dist/**',
     ],
   },
   eslint.configs.recommended,
