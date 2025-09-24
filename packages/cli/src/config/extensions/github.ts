@@ -11,8 +11,8 @@ import type {
   GeminiCLIExtension,
 } from '@google/gemini-cli-core';
 import { ExtensionUpdateState } from '../../ui/state/extensions.js';
+import { ProxyAwareFetch } from '@google/gemini-cli-core/src/utils/proxy-aware-fetch.js';
 import * as os from 'node:os';
-import * as https from 'node:https';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
@@ -315,23 +315,13 @@ async function fetchJson(
   if (token) {
     headers.Authorization = `token ${token}`;
   }
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, { headers }, (res) => {
-        if (res.statusCode !== 200) {
-          return reject(
-            new Error(`Request failed with status code ${res.statusCode}`),
-          );
-        }
-        const chunks: Buffer[] = [];
-        res.on('data', (chunk) => chunks.push(chunk));
-        res.on('end', () => {
-          const data = Buffer.concat(chunks).toString();
-          resolve(JSON.parse(data) as { assets: Asset[]; tag_name: string });
-        });
-      })
-      .on('error', reject);
-  });
+  
+  const proxyAwareFetch = ProxyAwareFetch.getInstance();
+  return await proxyAwareFetch.fetchJson<{ assets: Asset[]; tag_name: string }>(
+    url,
+    { method: 'GET' },
+    headers
+  );
 }
 
 async function downloadFile(url: string, dest: string): Promise<void> {
@@ -342,23 +332,12 @@ async function downloadFile(url: string, dest: string): Promise<void> {
   if (token) {
     headers.Authorization = `token ${token}`;
   }
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, { headers }, (res) => {
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          downloadFile(res.headers.location!, dest).then(resolve).catch(reject);
-          return;
-        }
-        if (res.statusCode !== 200) {
-          return reject(
-            new Error(`Request failed with status code ${res.statusCode}`),
-          );
-        }
-        const file = fs.createWriteStream(dest);
-        res.pipe(file);
-        file.on('finish', () => file.close(resolve as () => void));
-      })
-      .on('error', reject);
+  
+  const proxyAwareFetch = ProxyAwareFetch.getInstance();
+  await proxyAwareFetch.downloadFile(url, dest, {
+    headers,
+    followRedirects: true,
+    maxRedirects: 5
   });
 }
 

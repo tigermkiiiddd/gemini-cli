@@ -467,6 +467,12 @@ export class Config {
     }
     this.initialized = true;
 
+    // Initialize proxy configuration from CLI arguments
+    if (this.proxy) {
+      const { ProxyConfigManager } = await import('../services/proxy-config.js');
+      ProxyConfigManager.getInstance().setProxyUrl(this.proxy);
+    }
+
     // Initialize centralized FileDiscoveryService
     this.getFileService();
     if (this.getCheckpointingEnabled()) {

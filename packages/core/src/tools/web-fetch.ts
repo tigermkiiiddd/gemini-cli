@@ -20,11 +20,11 @@ import { getErrorMessage } from '../utils/errors.js';
 import type { Config } from '../config/config.js';
 import { ApprovalMode, DEFAULT_GEMINI_FLASH_MODEL } from '../config/config.js';
 import { getResponseText } from '../utils/partUtils.js';
-import { fetchWithTimeout, isPrivateIp } from '../utils/fetch.js';
+import { isPrivateIp } from '../utils/fetch.js';
 import { convert } from 'html-to-text';
-import { ProxyAgent, setGlobalDispatcher } from 'undici';
+import { ProxyAwareFetch } from '../utils/proxy-aware-fetch.js';
 
-const URL_FETCH_TIMEOUT_MS = 10000;
+// const URL_FETCH_TIMEOUT_MS = 10000; // Currently unused
 const MAX_CONTENT_LENGTH = 100000;
 
 // Helper function to extract URLs from a string
@@ -88,10 +88,12 @@ class WebFetchToolInvocation extends BaseToolInvocation<
     }
 
     try {
-      const response = await fetchWithTimeout(url, URL_FETCH_TIMEOUT_MS);
+      const proxyAwareFetch = ProxyAwareFetch.getInstance();
+      const fetch = proxyAwareFetch.createProxyAwareFetch();
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(
-          `Request failed with status code ${response.status} ${response.statusText}`,
+          `Failed to fetch ${url}: ${response.status} ${response.statusText}`,
         );
       }
       const html = await response.text();
@@ -340,10 +342,7 @@ export class WebFetchTool extends BaseDeclarativeTool<
         type: 'object',
       },
     );
-    const proxy = config.getProxy();
-    if (proxy) {
-      setGlobalDispatcher(new ProxyAgent(proxy as string));
-    }
+    // Proxy configuration is now handled by ProxyAwareFetch
   }
 
   protected override validateToolParamValues(

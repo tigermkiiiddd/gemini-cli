@@ -35,6 +35,8 @@ export * from './code_assist/types.js';
 export * from './utils/paths.js';
 export * from './utils/schemaValidator.js';
 export * from './utils/errors.js';
+export * from './utils/proxy-config.js';
+export * from './utils/proxy-aware-fetch.js';
 export * from './utils/getFolderStructure.js';
 export * from './utils/memoryDiscovery.js';
 export * from './utils/gitIgnoreParser.js';

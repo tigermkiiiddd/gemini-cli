@@ -25,6 +25,7 @@ import type { Config, MCPServerConfig } from '../config/config.js';
 import { AuthProviderType } from '../config/config.js';
 import { GoogleCredentialProvider } from '../mcp/google-auth-provider.js';
 import { DiscoveredMCPTool } from './mcp-tool.js';
+import { ProxyAwareFetch } from '../utils/proxy-aware-fetch.js';
 
 import type { FunctionDeclaration } from '@google/genai';
 import { mcpToTool } from '@google/genai';
@@ -1249,11 +1250,19 @@ export async function createTransport(
       authProvider: provider,
     };
     if (mcpServerConfig.httpUrl) {
+      // Use proxy-aware fetch for HTTP transport
+      const proxyAwareFetch = ProxyAwareFetch.getInstance();
+      transportOptions.fetch = proxyAwareFetch.createProxyAwareFetch();
+      
       return new StreamableHTTPClientTransport(
         new URL(mcpServerConfig.httpUrl),
         transportOptions,
       );
     } else if (mcpServerConfig.url) {
+      // Use proxy-aware fetch for SSE transport
+      const proxyAwareFetch = ProxyAwareFetch.getInstance();
+      transportOptions.fetch = proxyAwareFetch.createProxyAwareFetch();
+      
       return new SSEClientTransport(
         new URL(mcpServerConfig.url),
         transportOptions,
@@ -1304,6 +1313,10 @@ export async function createTransport(
 
   if (mcpServerConfig.httpUrl) {
     const transportOptions: StreamableHTTPClientTransportOptions = {};
+    
+    // Use proxy-aware fetch for HTTP transport
+    const proxyAwareFetch = ProxyAwareFetch.getInstance();
+    transportOptions.fetch = proxyAwareFetch.createProxyAwareFetch();
 
     // Set up headers with OAuth token if available
     if (hasOAuthConfig && accessToken) {
@@ -1327,6 +1340,10 @@ export async function createTransport(
 
   if (mcpServerConfig.url) {
     const transportOptions: SSEClientTransportOptions = {};
+    
+    // Use proxy-aware fetch for SSE transport
+    const proxyAwareFetch = ProxyAwareFetch.getInstance();
+    transportOptions.fetch = proxyAwareFetch.createProxyAwareFetch();
 
     // Set up headers with OAuth token if available
     if (hasOAuthConfig && accessToken) {
